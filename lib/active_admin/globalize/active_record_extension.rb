@@ -1,7 +1,8 @@
 module ActiveAdmin::Globalize
   module ActiveRecordExtension
+    extend ActiveSupport::Concern
 
-    module Methods
+    included do
       def translation_names
         self.translations.map(&:locale).map do |locale|
           I18n.t("active_admin.globalize.language.#{locale}")
@@ -9,17 +10,17 @@ module ActiveAdmin::Globalize
       end
     end
 
-    def active_admin_translates(*args, &block)
-      translates(*args.dup)
-      args.extract_options!
+    class_methods do
+      def translates(*args, &block)
+        super(*args.dup)
+        args.extract_options!
 
-      if block
-        translation_class.instance_eval &block
+        if block
+          translation_class.instance_eval &block
+        end
+
+        accepts_nested_attributes_for :translations, allow_destroy: true
       end
-
-      accepts_nested_attributes_for :translations, allow_destroy: true
-
-      include Methods
     end
 
   end
